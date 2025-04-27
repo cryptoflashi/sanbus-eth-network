@@ -27,10 +27,33 @@ app.post("/", async (req, res) => {
         result = "0x3b9aca00"; // 1 Gwei
         break;
       case "eth_getBalance":
-        result = "0x204fce5e3e2502611000000"; // Saldo inventado
+        result = "0x204fce5e3e2502611000000"; // Saldo ficticio
         break;
       case "net_version":
         result = "1337";
+        break;
+      case "eth_getBlockByNumber":
+        result = {
+          number: "0x" + currentBlock.toString(16),
+          hash: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+          parentHash: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+          nonce: "0x0",
+          sha3Uncles: "0x0",
+          logsBloom: "0x0",
+          transactionsRoot: "0x0",
+          stateRoot: "0x0",
+          receiptsRoot: "0x0",
+          miner: "0x0000000000000000000000000000000000000000",
+          difficulty: "0x0",
+          totalDifficulty: "0x0",
+          extraData: "0x0",
+          size: "0x0",
+          gasLimit: "0x6691b7",
+          gasUsed: "0x0",
+          timestamp: "0x" + Math.floor(Date.now() / 1000).toString(16),
+          transactions: [],
+          uncles: []
+        };
         break;
       default:
         throw new Error(`Método ${method} no soportado aún.`);
