@@ -20,23 +20,28 @@ app.post("/", async (req, res) => {
       case "eth_chainId":
         result = fakeChainId;
         break;
+
       case "eth_blockNumber":
         result = "0x" + currentBlock.toString(16);
         break;
+
       case "eth_gasPrice":
         result = "0x3b9aca00"; // 1 Gwei
         break;
+
       case "eth_getBalance":
-        result = "0x204fce5e3e2502611000000"; // Saldo ficticio
+        result = "0x204fce5e3e2502611000000"; // Saldo inventado (625M ETH)
         break;
+
       case "net_version":
         result = "1337";
         break;
+
       case "eth_getBlockByNumber":
         result = {
           number: "0x" + currentBlock.toString(16),
-          hash: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-          parentHash: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+          hash: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
+          parentHash: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
           nonce: "0x0",
           sha3Uncles: "0x0",
           logsBloom: "0x0",
@@ -55,8 +60,29 @@ app.post("/", async (req, res) => {
           uncles: []
         };
         break;
+
+      case "eth_syncing":
+        result = false; // No estamos sincronizando
+        break;
+
+      case "eth_estimateGas":
+        result = "0x5208"; // 21000 gas estándar
+        break;
+
+      case "eth_getLogs":
+        result = []; // No hay logs simulados
+        break;
+
+      case "web3_clientVersion":
+        result = "Sanbus-Ethereum-Client/v1.0.0";
+        break;
+
+      case "eth_sendTransaction":
+        result = "0x" + Math.random().toString(16).substr(2, 64); // Simula un hash de transacción
+        break;
+
       default:
-        throw new Error(`Método ${method} no soportado aún.`);
+        throw new Error(`Método ${method} no soportado aún: ${method}`);
     }
 
     res.json({
@@ -72,5 +98,5 @@ app.post("/", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor RPC mock corriendo en el puerto ${PORT}`);
+  console.log(`Servidor RPC mock completo corriendo en el puerto ${PORT}`);
 });
