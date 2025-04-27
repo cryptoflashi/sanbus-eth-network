@@ -10,6 +10,7 @@ let pendingTransactions = [];
 let blocks = [];
 let txHashToTx = {};
 let txHashToReceipt = {};
+let noncePerAddress = {}; // <- Nuevo: Control de nonce por dirección
 
 // Chain ID y Network ID configurados como Holesky
 const CHAIN_ID = "0x4268"; // 17000 en hexadecimal
@@ -111,7 +112,6 @@ app.post("/", async (req, res) => {
         break;
 
       case "eth_feeHistory":
-        // Simulación de historial de gas como Holesky
         const blockCount = parseInt(params[0], 16);
         const oldestBlock = params[1];
         const rewardPercentiles = params[2];
@@ -122,7 +122,7 @@ app.post("/", async (req, res) => {
 
         for (let i = 0; i <= blockCount; i++) {
           baseFeePerGas.push(randomGasPrice());
-          gasUsedRatio.push(Math.random().toFixed(2)); // % de gas usado
+          gasUsedRatio.push(Math.random().toFixed(2));
           reward.push(rewardPercentiles.map(() => randomGasPrice()));
         }
 
@@ -145,12 +145,18 @@ app.post("/", async (req, res) => {
       case "eth_sendTransaction":
       case "eth_sendRawTransaction":
         const txHash = randomHash();
-        pendingTransactions.push({ hash: txHash, from: "0x", to: "0x" });
+        const from = "0x0000000000000000000000000000000000000001"; // simulación de envío
+        pendingTransactions.push({ hash: txHash, from, to: "0x" });
+
         txHashToTx[txHash] = {
           hash: txHash,
-          from: "0x",
+          from,
           to: "0x"
         };
+
+        // Incrementamos el nonce de esa cuenta
+        noncePerAddress[from] = (noncePerAddress[from] || 0) + 1;
+
         result = txHash;
         break;
 
@@ -181,6 +187,12 @@ app.post("/", async (req, res) => {
           const blockNumber = parseInt(params[0], 16);
           result = blocks.find(b => parseInt(b.number, 16) === blockNumber) || null;
         }
+        break;
+
+      case "eth_getTransactionCount":
+        const address = params[0].toLowerCase();
+        const nonce = noncePerAddress[address] || 0;
+        result = "0x" + nonce.toString(16);
         break;
 
       case "eth_syncing":
@@ -221,5 +233,5 @@ app.post("/", async (req, res) => {
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`🚀 Sanbus Ethereum (versión Holesky) corriendo en el puerto ${PORT}`);
+  console.log(`🚀 Sanbus Ethereum (versión Holesky PRO) corriendo en el puerto ${PORT}`);
 });
