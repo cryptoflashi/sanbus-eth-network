@@ -74,11 +74,12 @@ app.post("/", async (req, res) => {
         break;
 
       case "eth_estimateGas":
-        result = "0x5208"; // 21000 gas
+        result = "0x5208"; // 21000 gas estándar
         break;
 
       case "eth_sendTransaction":
-        result = "0x" + Math.random().toString(16).substring(2, 66);
+      case "eth_sendRawTransaction": // 🚀 Soporte agregado aquí
+        result = "0x" + Math.random().toString(16).substring(2, 66); // Simulamos hash de tx
         break;
 
       case "eth_getTransactionByHash":
