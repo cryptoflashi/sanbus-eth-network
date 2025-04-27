@@ -4,19 +4,29 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Variables de la simulación
-let currentBlockNumber = 123456;
+// Variables del estado de la red
+let currentBlockNumber = 0;
 let pendingTransactions = [];
 let blocks = [];
 let txHashToTx = {};
 let txHashToReceipt = {};
+
+// Chain ID y Network ID configurados como Holesky
+const CHAIN_ID = "0x4268"; // 17000 en hexadecimal
+const NETWORK_ID = "17000";
 
 // Función para generar un hash aleatorio
 function randomHash() {
   return "0x" + Math.random().toString(16).substring(2, 66);
 }
 
-// Función para minar un bloque cada 10 segundos
+// Función para simular gasPrice entre 1 y 5 Gwei
+function randomGasPrice() {
+  const gwei = Math.floor(Math.random() * 5) + 1;
+  return "0x" + (gwei * 1e9).toString(16);
+}
+
+// Función para minar bloques cada 12 segundos (como Holesky)
 setInterval(() => {
   if (pendingTransactions.length > 0) {
     const newBlock = {
@@ -41,10 +51,10 @@ setInterval(() => {
       uncles: []
     };
 
-    // Guardar bloque
+    // Guardamos el nuevo bloque
     blocks.push(newBlock);
 
-    // Generar receipts para las transacciones minadas
+    // Marcamos las transacciones como minadas
     pendingTransactions.forEach(tx => {
       txHashToReceipt[tx.hash] = {
         transactionHash: tx.hash,
@@ -62,11 +72,15 @@ setInterval(() => {
 
     pendingTransactions = [];
     currentBlockNumber++;
-    console.log(`📦 Nuevo bloque minado: ${newBlock.number}`);
+    console.log(`📦 Bloque ${currentBlockNumber} minado.`);
+  } else {
+    // Aunque no haya transacciones, avanzamos bloque
+    currentBlockNumber++;
+    console.log(`⏳ Bloque vacío ${currentBlockNumber} minado.`);
   }
-}, 10000); // 10 segundos
+}, 12000); // 12 segundos
 
-// Handler principal
+// Manejo de los métodos RPC
 app.post("/", async (req, res) => {
   const { method, params, id } = req.body;
 
@@ -77,11 +91,11 @@ app.post("/", async (req, res) => {
 
     switch (method) {
       case "eth_chainId":
-        result = "0x539"; // 1337
+        result = CHAIN_ID;
         break;
 
       case "net_version":
-        result = "1337";
+        result = NETWORK_ID;
         break;
 
       case "web3_clientVersion":
@@ -93,13 +107,35 @@ app.post("/", async (req, res) => {
         break;
 
       case "eth_gasPrice":
-        // Gas price aleatorio entre 1 Gwei y 5 Gwei
-        const gasGwei = Math.floor(Math.random() * 5) + 1;
-        result = "0x" + (gasGwei * 1e9).toString(16);
+        result = randomGasPrice();
+        break;
+
+      case "eth_feeHistory":
+        // Simulación de historial de gas como Holesky
+        const blockCount = parseInt(params[0], 16);
+        const oldestBlock = params[1];
+        const rewardPercentiles = params[2];
+
+        const baseFeePerGas = [];
+        const gasUsedRatio = [];
+        const reward = [];
+
+        for (let i = 0; i <= blockCount; i++) {
+          baseFeePerGas.push(randomGasPrice());
+          gasUsedRatio.push(Math.random().toFixed(2)); // % de gas usado
+          reward.push(rewardPercentiles.map(() => randomGasPrice()));
+        }
+
+        result = {
+          oldestBlock,
+          baseFeePerGas,
+          gasUsedRatio,
+          reward
+        };
         break;
 
       case "eth_getBalance":
-        result = "0x204fce5e3e2502611000000"; // Saldo simulado
+        result = "0x204fce5e3e2502611000000"; // 625 millones de ETH
         break;
 
       case "eth_estimateGas":
@@ -127,7 +163,7 @@ app.post("/", async (req, res) => {
           blockNumber: null,
           blockHash: null,
           gas: "0x5208",
-          gasPrice: "0x3b9aca00",
+          gasPrice: randomGasPrice(),
           value: "0x0",
           input: "0x"
         } : null;
@@ -185,5 +221,5 @@ app.post("/", async (req, res) => {
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`Servidor RPC Sanbus Ethereum PRO corriendo en el puerto ${PORT}`);
+  console.log(`🚀 Sanbus Ethereum (versión Holesky) corriendo en el puerto ${PORT}`);
 });
