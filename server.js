@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Estado simulado de la blockchain
+// Simulación de estado
 let currentBlock = 123456;
 const fakeChainId = "0x539"; // 1337 en hexadecimal
 
@@ -21,33 +21,41 @@ app.post("/", async (req, res) => {
         result = fakeChainId;
         break;
 
+      case "net_version":
+        result = "1337";
+        break;
+
+      case "web3_clientVersion":
+        result = "SanbusEthereum/v1.0.0";
+        break;
+
       case "eth_blockNumber":
         result = "0x" + currentBlock.toString(16);
+        break;
+
+      case "eth_getBalance":
+        result = "0x204fce5e3e2502611000000"; // Saldo simulado
         break;
 
       case "eth_gasPrice":
         result = "0x3b9aca00"; // 1 Gwei
         break;
 
-      case "eth_getBalance":
-        result = "0x204fce5e3e2502611000000"; // Saldo inventado (625M ETH)
-        break;
-
-      case "net_version":
-        result = "1337";
+      case "eth_syncing":
+        result = false;
         break;
 
       case "eth_getBlockByNumber":
         result = {
           number: "0x" + currentBlock.toString(16),
-          hash: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
-          parentHash: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
+          hash: "0x" + "a".repeat(64),
+          parentHash: "0x" + "b".repeat(64),
           nonce: "0x0",
-          sha3Uncles: "0x0",
-          logsBloom: "0x0",
-          transactionsRoot: "0x0",
-          stateRoot: "0x0",
-          receiptsRoot: "0x0",
+          sha3Uncles: "0x" + "0".repeat(64),
+          logsBloom: "0x" + "0".repeat(512),
+          transactionsRoot: "0x" + "0".repeat(64),
+          stateRoot: "0x" + "0".repeat(64),
+          receiptsRoot: "0x" + "0".repeat(64),
           miner: "0x0000000000000000000000000000000000000000",
           difficulty: "0x0",
           totalDifficulty: "0x0",
@@ -61,24 +69,42 @@ app.post("/", async (req, res) => {
         };
         break;
 
-      case "eth_syncing":
-        result = false; // No estamos sincronizando
+      case "eth_getTransactionCount":
+        result = "0x1"; // Siempre 1
         break;
 
       case "eth_estimateGas":
-        result = "0x5208"; // 21000 gas estándar
-        break;
-
-      case "eth_getLogs":
-        result = []; // No hay logs simulados
-        break;
-
-      case "web3_clientVersion":
-        result = "Sanbus-Ethereum-Client/v1.0.0";
+        result = "0x5208"; // 21000 gas
         break;
 
       case "eth_sendTransaction":
-        result = "0x" + Math.random().toString(16).substr(2, 64); // Simula un hash de transacción
+        result = "0x" + Math.random().toString(16).substring(2, 66);
+        break;
+
+      case "eth_getTransactionByHash":
+        result = null; // No almacenamos transacciones reales
+        break;
+
+      case "eth_getTransactionReceipt":
+        result = null;
+        break;
+
+      case "eth_call":
+        result = "0x"; // Sin llamadas reales
+        break;
+
+      case "eth_getCode":
+        result = "0x"; // No hay contratos
+        break;
+
+      case "eth_getLogs":
+        result = [];
+        break;
+
+      case "eth_accounts":
+        result = [
+          "0x0000000000000000000000000000000000000001"
+        ]; // Cuenta simulada
         break;
 
       default:
@@ -92,11 +118,11 @@ app.post("/", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error:", error.message);
     res.status(500).json({ error: error.message });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor RPC mock completo corriendo en el puerto ${PORT}`);
+  console.log(`Servidor RPC mock PRO corriendo en el puerto ${PORT}`);
 });
