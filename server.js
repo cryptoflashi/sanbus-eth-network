@@ -1,18 +1,47 @@
 const express = require("express");
-const { JsonRpcProvider } = require("ethers");
-
 const app = express();
-const PORT = process.env.PORT || 3000; // <- Dinámico aquí
+const PORT = process.env.PORT || 3000;
 
-const provider = new JsonRpcProvider("http://127.0.0.1:8545");
+// Estado simulado de la blockchain
+let currentBlock = 123456;
+const fakeChainId = "0x539"; // 1337 en hexadecimal
 
 app.use(express.json());
 
 app.post("/", async (req, res) => {
+  const { method, params, id } = req.body;
+
+  console.log(`Método recibido: ${method}`);
+
   try {
-    const { method, params, id, jsonrpc } = req.body;
-    const result = await provider.send(method, params);
-    res.json({ id, jsonrpc, result });
+    let result;
+
+    switch (method) {
+      case "eth_chainId":
+        result = fakeChainId;
+        break;
+      case "eth_blockNumber":
+        result = "0x" + currentBlock.toString(16);
+        break;
+      case "eth_gasPrice":
+        result = "0x3b9aca00"; // 1 Gwei
+        break;
+      case "eth_getBalance":
+        result = "0x204fce5e3e2502611000000"; // Saldo inventado
+        break;
+      case "net_version":
+        result = "1337";
+        break;
+      default:
+        throw new Error(`Método ${method} no soportado aún.`);
+    }
+
+    res.json({
+      jsonrpc: "2.0",
+      id,
+      result,
+    });
+
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: error.message });
@@ -20,5 +49,5 @@ app.post("/", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor RPC público corriendo en el puerto ${PORT}`);
+  console.log(`Servidor RPC mock corriendo en el puerto ${PORT}`);
 });
