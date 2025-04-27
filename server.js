@@ -2,9 +2,8 @@ const express = require("express");
 const { JsonRpcProvider } = require("ethers");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; // <- Dinámico aquí
 
-// Conexión al nodo Hardhat
 const provider = new JsonRpcProvider("http://127.0.0.1:8545");
 
 app.use(express.json());
